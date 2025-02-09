@@ -7,7 +7,7 @@ import re
 # Load environment variables
 load_dotenv()
 
-class SocraticTutor:
+class Tutor:
     def __init__(self):
         # Initialize Anthropic client
         self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))

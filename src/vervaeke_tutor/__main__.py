@@ -1,9 +1,9 @@
 """Command-line interface for the Vervaeke Tutor."""
 
-from .socratic_tutor import SocraticTutor
+from .tutor import Tutor
 
 def main():
-    tutor = SocraticTutor()
+    tutor = Tutor()
     
     # Get transcript directory
     while True:
