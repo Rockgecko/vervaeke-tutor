@@ -1,5 +1,7 @@
 import pytest
+from unittest.mock import MagicMock, ANY  
 from vervaeke_tutor.tutor import Tutor
+# from anthropic.types import ContentBlock, Message 
 
 @pytest.fixture
 def mock_transcripts_folder(tmpdir):
@@ -80,3 +82,37 @@ def test_display_final_usage(capsys):
     captured = capsys.readouterr()
     assert isinstance(captured.out, str)  # Check if the output is a string
     assert "Final Usage" in captured.out  # Check if the final usage information is included
+
+
+@pytest.fixture
+def mock_tutor():
+    instance = Tutor()  
+    instance.client = MagicMock()  # Mock the Anthropic client
+    return instance
+
+def test_generate_response(mock_tutor):
+    # Define the mock response
+    mock_message = MagicMock()
+    mock_message.text = "Mocked response"     
+    mock_response = MagicMock()
+    mock_response.content = [mock_message]
+    mock_response.usage.input_tokens = 50
+    mock_response.usage.output_tokens = 20
+    
+    # Mock the create method
+    mock_tutor.client.messages.create.return_value = mock_response
+
+    # Call the function
+    result = mock_tutor.generate_response("What is the meaning crisis?")
+
+    # Assertions
+    assert result == "Mocked response"
+    mock_tutor.client.messages.create.assert_called_once_with(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=500,
+        messages=[{"role": "user", "content": "What is the meaning crisis?"}],
+        system=ANY,  # Allows any system prompt since it's dynamic
+        temperature=0.7
+    )
+    assert mock_tutor.total_input_tokens == 50
+    assert mock_tutor.total_output_tokens == 20
