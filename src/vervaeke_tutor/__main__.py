@@ -12,8 +12,13 @@ def main(transcripts_dir: str = 'transcripts'):
     if not tutor.load_transcripts(transcripts_dir):
         while True:
             transcript_dir = input("Enter path to transcript directory:").strip()
+            if transcript_dir == 'quit':
+                return
             if tutor.load_transcripts(transcript_dir):
                 break
+    
+    # Start the tutor's dialogue
+    tutor.start_dialogue()     
 
 if __name__ == "__main__":
     app()
