@@ -8,17 +8,16 @@ import re
 load_dotenv()
 
 class Tutor:
-    def __init__(self):
+    def __init__(self) -> None:
         # Initialize Anthropic client
         self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-        self.transcripts = {}
-        self.current_episode = None
-        self.total_input_tokens = 0
-        self.total_output_tokens = 0
+        self.transcripts: dict[int, str] = {}
+        self.current_episode: int | None = None
+        self.total_input_tokens: int = 0
+        self.total_output_tokens: int = 0
         
-    def load_transcripts(self, transcript_dir):
+    def load_transcripts(self, transcript_dir: str) -> bool:
         """Load all transcript files from the specified directory."""
-        print(transcript_dir)
         try:
             transcript_path = Path(transcript_dir)
             if not transcript_path.exists():
@@ -31,7 +30,7 @@ class Tutor:
             self.transcripts.clear()
             for file in episode_files:
                 try:
-                    episode_num = int(re.search(r'episode_(\d+)\.txt', file.name).group(1))
+                    episode_num = int(re.search(r'episode_(\d+)\.txt', file.name).group(1)) # type: ignore
                     with open(file, 'r', encoding='utf-8') as f:
                         self.transcripts[episode_num] = f.read()
                 except Exception as e:
@@ -44,23 +43,23 @@ class Tutor:
             print(f"\nError loading transcripts: {str(e)}")
             return False
     
-    def get_episode_content(self, episode_num):
+    def get_episode_content(self, episode_num: int) -> str | None:
         """Get the content of a specific episode."""
         return self.transcripts.get(episode_num, None)
     
-    def list_available_episodes(self):
+    def list_available_episodes(self) -> list:
         """List all available episode numbers."""
         episodes = sorted(self.transcripts.keys())
         return episodes
     
-    def set_current_episode(self, episode_num):
+    def set_current_episode(self, episode_num: int) -> bool:
         """Set the current episode for context."""
         if episode_num in self.transcripts:
             self.current_episode = episode_num
             return True
         return False
                 
-    def start_dialogue(self):
+    def start_dialogue(self) -> None:
         """Start a dialogue with the user."""
         print("Welcome to the Vervaeke Tutor!")
         print("I'll help you learn about the ideas from 'Awakening from the Meaning Crisis'")
@@ -100,7 +99,7 @@ class Tutor:
             print("\nTutor:", response)
             self.display_usage()
             
-    def display_usage(self):
+    def display_usage(self) -> None:
         """Display current token usage statistics."""
         print("\n---Token Usage---")
         print(f"Input tokens: {self.total_input_tokens:,}")
@@ -108,7 +107,7 @@ class Tutor:
         print(f"Total tokens: {self.total_input_tokens + self.total_output_tokens:,}")
         print("---------------")
         
-    def display_final_usage(self):
+    def display_final_usage(self) -> None:
         """Display final token usage statistics and estimated cost."""
         print("\n===== Final Usage Statistics =====")
         print(f"Total input tokens: {self.total_input_tokens:,}")
@@ -121,7 +120,7 @@ class Tutor:
         print(f"Estimated cost: ${total_cost:.3f}")
         print("================================")
             
-    def generate_response(self, user_input):
+    def generate_response(self, user_input: str) -> str:
         """Generate a tutoring response using Claude."""
         # Update system prompt for direct tutoring style
         system_prompt = """You are a knowledgeable tutor helping someone learn about John Vervaeke's 'Awakening from the Meaning Crisis' lectures. 
@@ -148,7 +147,7 @@ class Tutor:
             response = self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
                 max_tokens=500,
-                messages=messages,
+                messages=messages, # type: ignore
                 system=system_prompt,
                 temperature=0.7
             )
@@ -157,6 +156,6 @@ class Tutor:
             self.total_input_tokens += response.usage.input_tokens
             self.total_output_tokens += response.usage.output_tokens
             
-            return response.content[0].text
+            return response.content[0].text # type: ignore
         except Exception as e:
             return f"I apologize, but I encountered an error: {str(e)}"
